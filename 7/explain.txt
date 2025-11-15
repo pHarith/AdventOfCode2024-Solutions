@@ -1,0 +1,52 @@
+The solution to day 7 problem was rather simple, with one rather tricky part - recursion and using dfs
+
+Let us break down the solution step-by-step here:
+
+1. We read files in the form of
+target: a b c ... where a, b and c are operands
+
+Using a combination of + and *, left to right, these operands should evaluate to target.
+
+For example: 190: 15 4 10 => 190 = 15 + 4 * 10 = 19 * 10 = 190
+
+2. Read the files line by line, using split(':') to split operands and target, then strip().split() to separate each operands
+into a list.
+
+3. Recursive solution - here comes the hard part, and we will break down how we do it for a smaller case
+190 = 15 4 10
+
+########### CODE GOES HERE #################
+
+def validate_operation(target, operands, ops):
+    def dfs_solve(index, current):
+        
+        if index == len(operands): 
+            return current == target
+        
+        for op in ops:
+            # Apply the operator between current running result and the next operand
+            next_val = apply_opr(op, current, operands[index])
+
+            if dfs_solve(index + 1, next_val):
+                return True
+
+    return dfs_solve(1, current=operands[0])
+
+########### CODE ENDS ######################
+
+(i). validate_operation(190, [15, 4, 10], ['+', '*']) is called.
+(ii). first recursion => dfs_solve(1, 15) where 15 is the first operand, 1 is the next index (4)
+(iii). into dfs_solve, we iterate through ops and compute each possible value
+15 + 4 = 19 - loop 1, 15 * 4 = 60 - loop 2
+(iv). if dfs_solve(index + 1, next_val): => second recursion, we use result of 19 (first loop)
+and pass it through dfs_solve => dfs_solve(2, 19) where 2 is index of the last operand (10)
+(v). same step as (iii) => 19 + 10 = 29, 19 * 10 = 190
+(vi). dfs_solve(3, 29) will return 29 == 190, which is False, so we move to 2nd loop dfs_solve(3, 190)
+which returns true
+(vii). We move up through recursion to our original dfs_solve(2, 19), and return True. The function terminates here.
+
+4. We keep doing this for each line, any line of operation returns True (target = sums/prods of operands), we add it to final
+result and return this result.
+
+5. For part 2, all we do is add a concaternate operand (||), which is as simple as a || b = int(str(a) + str(b)).
+
