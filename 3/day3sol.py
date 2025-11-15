@@ -86,6 +86,3 @@ if __name__ == "__main__":
     input = 'input.txt'
     print(solve_1(input))
     print(solve_2(input))
-
-# The answer is 188192787
-# Part 2: The answer is 113965544
