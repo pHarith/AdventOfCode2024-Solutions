@@ -18,11 +18,16 @@ WAIT_TIME = 100
 MIN_CONSECUTIVE_ROWS = 7
 MIN_CONSECUTIVE_ONES = 7
 # i.e. we want to check for 7 consecutive rows with at least 7 consecutives ones
+# NOTE: Why 7? Lucky number 7...
 
 import copy
 
-def sum_tuples_mod(a, b, rows, cols, i):
-    return ((a[0] + b[0] * i) % cols, (a[1] + b[1] * i) % rows) 
+def robot_move(init, move, rows, cols, i):
+    """
+    Move a robot from <init> by <move> for <i> seconds.
+    Movement restricted to be within <rows> and <cols>.
+    """
+    return ((init[0] + move[0] * i) % cols, (init[1] + move[1] * i) % rows) 
 
 def create_board(rows, cols):
     return [[0] * cols for _ in range(rows)]
@@ -40,13 +45,16 @@ def simulate_movement(board, robots_info, secs=100):
     test_board = copy.deepcopy(board)
     rows, cols = len(board), len(board[0])
     for init_pos, velocity in robots_info:
-        new_pos = sum_tuples_mod(init_pos, velocity, rows, cols, secs)
+        new_pos = robot_move(init_pos, velocity, rows, cols, secs)
         # NOTE: rows and cols are reversed of x and y coordinates
         y_coord, x_coord = new_pos
         test_board[x_coord][y_coord] += 1    
     return test_board
 
 def divide_board(board):
+    """
+    Divide a <board> of m x n size into 
+    """
     mid_row = len(board) // 2
     mid_col = len(board[0]) // 2
 
@@ -81,13 +89,14 @@ def solve(input_file, board_size):
 # NOTE: To form a christmas tree, it should have a noticable pattern
 # Such a pattern is checking if there is a series of rows with consecutive 1s
 
-def compute_easter_egg_time(board, robot_info):
-    for i in range(1, 10001):
+def compute_easter_egg_time(board, robot_info, max_time=10000):
+    for i in range(1, max_time):
         new_board = simulate_movement(board, robot_info, i)
         if check_christmas_tree(new_board):
             print_board_to_file(new_board)
             return i
-    print_board_to_file(new_board)
+    # Printing tree to file for sanity checking
+    # print_board_to_file(new_board)
     return 0
     
 def check_christmas_tree(board):
@@ -118,7 +127,7 @@ def check_consecutive_ones(row):
 
 def solve_part2(input_file, board_size):
     """
-    Produce the solution to the day 14 problem - Restroom Redoubt
+    Produce the solution to part 2 of the day 14 problem - Restroom Redoubt
     """
     num_rows, num_cols = board_size
     board = create_board(num_rows, num_cols)
@@ -144,6 +153,6 @@ if __name__ == "__main__":
     test_input = 'test.txt'
     test_board = TEST_ROWS, TEST_COLS
     input_board = NUM_ROWS, NUM_COLS
-    print(solve(input, board_size=input_board))
 
+    print(solve(input, board_size=input_board))
     print(solve_part2(input, board_size=input_board))
