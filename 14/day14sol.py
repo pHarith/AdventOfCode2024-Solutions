@@ -14,8 +14,15 @@ TEST_ROWS, TEST_COLS = 7, 11
 # Wait time for simulating robot movements
 WAIT_TIME = 100
 
-def sum_tuples_mod(a, b, rows, cols):
-    return ((a[0] + b[0]) % cols, (a[1] + b[1]) % rows) 
+# for checking if it is a tree
+MIN_CONSECUTIVE_ROWS = 7
+MIN_CONSECUTIVE_ONES = 7
+# i.e. we want to check for 7 consecutive rows with at least 7 consecutives ones
+
+import copy
+
+def sum_tuples_mod(a, b, rows, cols, i):
+    return ((a[0] + b[0] * i) % cols, (a[1] + b[1] * i) % rows) 
 
 def create_board(rows, cols):
     return [[0] * cols for _ in range(rows)]
@@ -30,16 +37,14 @@ def parse_robots_info(input_file):
     return robot_info
 
 def simulate_movement(board, robots_info, secs=100):
+    test_board = copy.deepcopy(board)
     rows, cols = len(board), len(board[0])
     for init_pos, velocity in robots_info:
-        for i in range(secs):
-            new_pos = sum_tuples_mod(init_pos, velocity, rows, cols)
-            init_pos = new_pos
-
-        # NOTE: rows and cols are       
+        new_pos = sum_tuples_mod(init_pos, velocity, rows, cols, secs)
+        # NOTE: rows and cols are reversed of x and y coordinates
         y_coord, x_coord = new_pos
-        board[x_coord][y_coord] += 1    
-    return
+        test_board[x_coord][y_coord] += 1    
+    return test_board
 
 def divide_board(board):
     mid_row = len(board) // 2
@@ -65,18 +70,74 @@ def solve(input_file, board_size):
     """
     num_rows, num_cols = board_size
     board = create_board(num_rows, num_cols)
-    #print_board(board)
-    robot_info = parse_robots_info(input_file)
-    simulate_movement(board, robot_info)
 
-    #print("After simulation: ")
-    #print_board(board)
-    quadrants = divide_board(board)
+    robot_info = parse_robots_info(input_file)
+    new_board = simulate_movement(board, robot_info)
+
+    quadrants = divide_board(new_board)
     return compute_safety_rating(quadrants)
 
+# SOLUTION TO SOLVING PART 2
+# NOTE: To form a christmas tree, it should have a noticable pattern
+# Such a pattern is checking if there is a series of rows with consecutive 1s
+
+def compute_easter_egg_time(board, robot_info):
+    for i in range(1, 10001):
+        new_board = simulate_movement(board, robot_info, i)
+        if check_christmas_tree(new_board):
+            print_board_to_file(new_board)
+            return i
+    print_board_to_file(new_board)
+    return 0
+    
+def check_christmas_tree(board):
+    consecutive_rows = 0
+    for row in board:
+        if check_consecutive_ones(row):
+            consecutive_rows += 1
+
+            # Check if there are 7 or more consecutive rows
+            if consecutive_rows >= MIN_CONSECUTIVE_ROWS:
+                return True
+        else:
+            consecutive_rows = 0
+    return False
+
+
+def check_consecutive_ones(row):
+    max_consecutive = curr_consecutive = 0
+    for item in row:
+        if item == 1:
+            curr_consecutive += 1
+            max_consecutive = max(max_consecutive, curr_consecutive)
+        else:
+            # Reset our consecutive ones
+            curr_consecutive = 0
+    return max_consecutive >= MIN_CONSECUTIVE_ONES
+
+
+def solve_part2(input_file, board_size):
+    """
+    Produce the solution to the day 14 problem - Restroom Redoubt
+    """
+    num_rows, num_cols = board_size
+    board = create_board(num_rows, num_cols)
+    robot_info = parse_robots_info(input_file)
+    return compute_easter_egg_time(board, robot_info)
+
 def print_board(board):
-    for b in board:
-        print(b)
+    for row in board:
+        for item in row:
+            print(item, end="")
+        print()
+
+def print_board_to_file(board):
+    with open("tree.txt", "w+") as tree_file:
+        for row in board:
+            for pos in row:
+                tree_file.write(str(pos))
+            tree_file.write("\n")
+        
 
 if __name__ == "__main__":
     input = 'input.txt'
@@ -84,3 +145,5 @@ if __name__ == "__main__":
     test_board = TEST_ROWS, TEST_COLS
     input_board = NUM_ROWS, NUM_COLS
     print(solve(input, board_size=input_board))
+
+    print(solve_part2(input, board_size=input_board))
