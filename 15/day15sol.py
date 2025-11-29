@@ -162,7 +162,7 @@ def transform_board(board):
 def get_box_pos(board, x, y):
     if board[y][x] == BOX_LEFT:
         if board[y][x+1] == BOX_RIGHT:
-            return ((x, y), (x+1, y), 1)
+            return (((x, y), (x+1, y)), 1)
     if board[y][x] == BOX_RIGHT:
         if board[y][x-1] == BOX_LEFT:
             return (((x-1, y), (x, y)), 0)
@@ -180,7 +180,7 @@ def handle_vertical_box(move_vector, box_info, board):
 
         queue = deque()
         adjacent_boxes = []
-        visited = ()
+        visited = set()
 
         queue.append(start_box)
         visited.add(start_box)
@@ -189,7 +189,7 @@ def handle_vertical_box(move_vector, box_info, board):
             curr_box = queue.popleft()
             curr_box_left, curr_box_right = curr_box
 
-            adj_box.append(curr_box)
+            adjacent_boxes.append(curr_box)
 
             # Find their new positions
             new_box_left = sum_tuple(curr_box_left, move_vector)
@@ -200,7 +200,7 @@ def handle_vertical_box(move_vector, box_info, board):
             new_box_right_x, new_box_right_y = new_box_right
 
             # Check for walls (end move)
-            if board[new_box_left_x][new_box_left_y] == WALL or board[new_box_right_x][new_box_right_y] == WALL:
+            if board[new_box_left_y][new_box_left_x] == WALL or board[new_box_right_y][new_box_right_x] == WALL:
                 return None     # No possible move
 
             # Check for "children" i.e. potential boxes for each side
@@ -244,6 +244,7 @@ def handle_vertical_box(move_vector, box_info, board):
     return True
 
 def handle_horizontal_box(move_vector, box_info, board):
+    print(box_info)
     box_pos, other_side = box_info
 
     # We always want to start from the end of the box
@@ -286,17 +287,18 @@ def handle_horizontal_box(move_vector, box_info, board):
             boxes_to_push.append(new_box_pos)
             check_pos = new_box_pos[other_side]
 
-
-
 def move_robot_on_board_2(robot_pos, board, movement):
     init_pos = robot_pos
-    for move in movement:
+    for i, move in enumerate(movement):
         valid_move = True
 
+        print(i, move)
         # Grab the movement vector from the dictionary
         move_vector = movement_dictionary[move]
 
         init_x, init_y = init_pos
+
+        print(board[init_y][init_x])
 
         # Sanity check if the robot position is correct
         if not board[init_y][init_x] == ROBOT:
@@ -321,17 +323,19 @@ def move_robot_on_board_2(robot_pos, board, movement):
             # Handle horizontal and vertical movement separately
 
             if move in ['<', '>']: # Horizontal movement
-                valid_move = handle_horizontal_box(move, move_vector, get_box_pos(board, new_x, new_y), board)
+                valid_move = handle_horizontal_box(move_vector, get_box_pos(board, new_x, new_y), board)
         
             else: # Vertical movement
-                valid_move = handle_vertical_box(move, move_vector, get_box_pos(board, new_x, new_y), board)
+                valid_move = handle_vertical_box(move_vector, get_box_pos(board, new_x, new_y), board)
         
         # Execute move (this happens whether we have to push a box or walk to empty space)
+        print(valid_move)
         if valid_move:
             board[init_y][init_x] = EMPTY_SPACE
             board[new_y][new_x] = ROBOT
             init_pos = new_pos
-        # print_board(board)
+        
+        print_board(board)
     return
 
 def solve_part2(input_file):
@@ -340,11 +344,23 @@ def solve_part2(input_file):
     """
     board, movement_instr = parse_board_and_movement(input_file)
     new_board = transform_board(board)
-    # init_robot_pos = find_unit_pos(board, unit=ROBOT)
-    # if init_robot_pos is not None:
-    #    move_robot_on_board(init_robot_pos, board, movement_instr)
+
+    # Board before moving the robot
+    print("Board before moving robot: ")
     print_board(new_board)
-    return
+
+    init_robot_pos = find_unit_pos(new_board, unit=ROBOT)
+    print(f"Init robot position found = {init_robot_pos}")
+
+    print(f"Movement Instructions: {movement_instr}")
+    if init_robot_pos is not None:
+        move_robot_on_board_2(init_robot_pos, new_board, movement_instr)
+
+    
+    # Board after moving the robot
+    print("Board after moving robot: ")
+    print_board(new_board)
+    return 0
 
 
 if __name__ == "__main__":
