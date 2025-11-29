@@ -26,6 +26,9 @@ transform_dict = {WALL: '##', ROBOT: '@.', BOX: '[]', EMPTY_SPACE: '..'}
 BOX_LEFT = '['
 BOX_RIGHT = ']'
 
+# Imports for part 2
+from collections import deque
+
 
 def compute_gps_score(box_coord):
     """
@@ -165,15 +168,89 @@ def get_box_pos(board, x, y):
             return (((x-1, y), (x, y)), 0)
     return None, None
 
-def handle_vertical_box(move, move_vector, box_info, board):
-    valid_move = True
+def handle_vertical_box(move_vector, box_info, board):
 
-    return valid_move
+    start_box, _ = box_info
 
-def handle_horizontal_box(move, move_vector, box_info, board):
+    def adjacent_boxes_bfs():
+        """
+        Return adjacent boxes that is affected by the move i.e. also pushed if the robot moves
+        and pushes a box.
+        """
+
+        queue = deque()
+        adjacent_boxes = []
+        visited = ()
+
+        queue.append(start_box)
+        visited.add(start_box)
+
+        while queue:
+            curr_box = queue.popleft()
+            curr_box_left, curr_box_right = curr_box
+
+            adj_box.append(curr_box)
+
+            # Find their new positions
+            new_box_left = sum_tuple(curr_box_left, move_vector)
+            new_box_right = sum_tuple(curr_box_right, move_vector)
+
+            # Split x and y to check board indices
+            new_box_left_x, new_box_left_y = new_box_left
+            new_box_right_x, new_box_right_y = new_box_right
+
+            # Check for walls (end move)
+            if board[new_box_left_x][new_box_left_y] == WALL or board[new_box_right_x][new_box_right_y] == WALL:
+                return None     # No possible move
+
+            # Check for "children" i.e. potential boxes for each side
+            if new_box_left in [BOX_LEFT, BOX_RIGHT]:
+                adj_box = get_box_pos(board, new_box_left_x, new_box_left_y)
+                if adj_box not in visited:
+                    visited.add(adj_box)
+                    queue.append(adj_box)
+
+            if new_box_right in [BOX_LEFT, BOX_RIGHT]:
+                adj_box = get_box_pos(board, new_box_right_x, new_box_right_y)
+                if adj_box not in visited:
+                    visited.add(adj_box)
+                    queue.append(adj_box)
+        
+        return adjacent_boxes
+
+    boxes_to_push = adjacent_boxes_bfs()
+
+    if boxes_to_push is None:
+        return False
+
+    # Push the box, start from the last box
+    for i in range(len(boxes_to_push) - 1, -1, -1): # start from last index, go backwards by -1 until it loops back
+        current_box = boxes_to_push[i]
+        left_x, left_y = current_box[0]
+        right_x, right_y = current_box[1]
+
+        # Compute their new positions
+        new_left_x, new_left_y = sum_tuple((left_x, left_y), move_vector)
+        new_right_x, new_right_y = sum_tuple((right_x, right_y), move_vector)
+
+        # Empty out the previous positions
+        board[left_y][left_x] = EMPTY_SPACE
+        board[right_y][right_x] = EMPTY_SPACE
+
+        # Push the box in the direction of move
+        board[new_left_y][new_left_x] = BOX_LEFT
+        board[new_right_y][new_right_x] = BOX_RIGHT 
+
+    return True
+
+def handle_horizontal_box(move_vector, box_info, board):
     box_pos, other_side = box_info
 
+    # We always want to start from the end of the box
     check_pos = box_pos[other_side]
+
+    # Collect all the boxes (useful for pushing later)
+    boxes_to_push = [box_pos]
 
     while True: # Check until we hit empty space (Success) or wall (Fail)
         check_pos = sum_tuple(check_pos, move_vector)
@@ -182,12 +259,31 @@ def handle_horizontal_box(move, move_vector, box_info, board):
         if board[check_y][check_x] == WALL:
             return False
         elif board[check_y][check_x] == EMPTY_SPACE:
-            # Push the box
+            # Push the box, start from the last box
+            for i in range(len(boxes_to_push) - 1, -1, -1): # start from last index, go backwards by -1 until it loops back
+                current_box = boxes_to_push[i]
+                left_x, left_y = current_box[0]
+                right_x, right_y = current_box[1]
+
+                # Compute their new positions
+                new_left_x, new_left_y = sum_tuple((left_x, left_y), move_vector)
+                new_right_x, new_right_y = sum_tuple((right_x, right_y), move_vector)
+
+                # Empty out the previous positions
+                board[left_y][left_x] = EMPTY_SPACE
+                board[right_y][right_x] = EMPTY_SPACE
+
+                # Push the box in the direction of move
+                board[new_left_y][new_left_x] = BOX_LEFT
+                board[new_right_y][new_right_x] = BOX_RIGHT 
             
-            # board[check_y][check_x] = BOX
             return True
         elif board[check_y][check_x] in [BOX_LEFT, BOX_RIGHT]:
             new_box_pos, other_side = get_box_pos(board, check_x, check_y)
+
+            if new_box_pos is None:
+                return             
+            boxes_to_push.append(new_box_pos)
             check_pos = new_box_pos[other_side]
 
 
