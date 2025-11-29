@@ -131,7 +131,7 @@ def solve(input_file):
     init_robot_pos = find_unit_pos(board, unit=ROBOT)
     if init_robot_pos is not None:
         move_robot_on_board(init_robot_pos, board, movement_instr)
-    print_board(board)
+    # print_board(board)
     return gps_sum(board)
 
 def print_board(board):
@@ -204,14 +204,15 @@ def handle_vertical_box(move_vector, box_info, board):
                 return None     # No possible move
 
             # Check for "children" i.e. potential boxes for each side
-            if new_box_left in [BOX_LEFT, BOX_RIGHT]:
-                adj_box = get_box_pos(board, new_box_left_x, new_box_left_y)
+        
+            if board[new_box_left_y][new_box_left_x] in [BOX_LEFT, BOX_RIGHT]:
+                adj_box, _ = get_box_pos(board, new_box_left_x, new_box_left_y)
                 if adj_box not in visited:
                     visited.add(adj_box)
                     queue.append(adj_box)
 
-            if new_box_right in [BOX_LEFT, BOX_RIGHT]:
-                adj_box = get_box_pos(board, new_box_right_x, new_box_right_y)
+            if board[new_box_right_y][new_box_right_x] in [BOX_LEFT, BOX_RIGHT]:
+                adj_box, _ = get_box_pos(board, new_box_right_x, new_box_right_y)
                 if adj_box not in visited:
                     visited.add(adj_box)
                     queue.append(adj_box)
@@ -244,7 +245,7 @@ def handle_vertical_box(move_vector, box_info, board):
     return True
 
 def handle_horizontal_box(move_vector, box_info, board):
-    print(box_info)
+    # print(box_info)
     box_pos, other_side = box_info
 
     # We always want to start from the end of the box
@@ -292,13 +293,13 @@ def move_robot_on_board_2(robot_pos, board, movement):
     for i, move in enumerate(movement):
         valid_move = True
 
-        print(i, move)
+        # print(i, move)
         # Grab the movement vector from the dictionary
         move_vector = movement_dictionary[move]
 
         init_x, init_y = init_pos
 
-        print(board[init_y][init_x])
+        # print(board[init_y][init_x])
 
         # Sanity check if the robot position is correct
         if not board[init_y][init_x] == ROBOT:
@@ -329,14 +330,51 @@ def move_robot_on_board_2(robot_pos, board, movement):
                 valid_move = handle_vertical_box(move_vector, get_box_pos(board, new_x, new_y), board)
         
         # Execute move (this happens whether we have to push a box or walk to empty space)
-        print(valid_move)
+        # print(valid_move)
         if valid_move:
             board[init_y][init_x] = EMPTY_SPACE
             board[new_y][new_x] = ROBOT
             init_pos = new_pos
         
-        print_board(board)
+        # print_board(board)
     return
+
+'''
+def compute_gps_score_2(box_left, box_right, num_rows, num_cols):
+    """
+    Compute the gps score based on the new rules given in part 2, where we use the shortest
+    distance from edge of the board to closest edge of the box. 
+    """
+    box_left_x, box_left_y = box_left
+    box_right_x, box_right_y = box_right
+
+
+    # NOTE: x_coords = cols, y_coords = rows
+    gps_x = min(box_left_x, num_cols - 1 - box_right_x)
+    gps_y = min(box_left_y, num_rows - 1 - box_right_y)
+
+    # NOTE: box_left_y = box_right_y
+
+    return 100 * gps_y + gps_x
+'''
+
+def gps_sum_2(board):
+    sum = 0
+    num_rows, num_cols = len(board), len(board[0])
+    box_visited = set()
+
+    for y in range(num_rows):
+        for x in range(num_cols):
+            if board[y][x] in [BOX_LEFT, BOX_RIGHT] and (x, y) not in box_visited:
+                box_pos, _ = get_box_pos(board, x, y)
+                box_left, box_right = box_pos
+                box_visited.add(box_left)
+                box_visited.add(box_right)
+                #sum += compute_gps_score_2(box_left, box_right, num_rows, num_cols)
+                sum += compute_gps_score(box_left)
+    return sum
+
+
 
 def solve_part2(input_file):
     """
@@ -346,26 +384,26 @@ def solve_part2(input_file):
     new_board = transform_board(board)
 
     # Board before moving the robot
-    print("Board before moving robot: ")
-    print_board(new_board)
+    # print("Board before moving robot: ")
+    # print_board(new_board)
 
     init_robot_pos = find_unit_pos(new_board, unit=ROBOT)
-    print(f"Init robot position found = {init_robot_pos}")
+    # print(f"Init robot position found = {init_robot_pos}")
 
-    print(f"Movement Instructions: {movement_instr}")
+    # print(f"Movement Instructions: {movement_instr}")
     if init_robot_pos is not None:
         move_robot_on_board_2(init_robot_pos, new_board, movement_instr)
 
     
     # Board after moving the robot
-    print("Board after moving robot: ")
-    print_board(new_board)
-    return 0
+    #print("Board after moving robot: ")
+    # print_board(new_board)
+    return gps_sum_2(new_board)
 
 
 if __name__ == "__main__":
-    #input = 'input.txt'
-    #input = 'test.txt'
-    input = 'smalltest.txt'
-    # print(solve(input))
+    input = 'input.txt'
+    # input = 'test.txt'
+    #input = 'smalltest.txt'
+    print(solve(input))
     print(solve_part2(input))
