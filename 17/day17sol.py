@@ -1,6 +1,12 @@
 # Solution to day 17: Chronospatial Computer
 #### SUMMARY OF TASKS ####
-# 1. 
+# 1. Read the register and programs as a dictionary and 
+# 2. Helper function to handle combo operands
+# 3. Function to run the program, 2 elements per time
+# 4. Switch-case to handle opcodes
+
+# Part 2:
+# Attempt backtracking
 
 def read_register(input_file):
     """
