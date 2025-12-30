@@ -24,7 +24,7 @@ def read_corrupted_coordinates(input_file):
         for byte in corrupted_bytes:
             x, y = byte.strip().split(',')
             corrupted_coordinates.append((int(x), int(y)))
-    print(corrupted_coordinates)
+    # print(corrupted_coordinates)
     return corrupted_coordinates
 
 def create_board(board_size):
@@ -34,9 +34,14 @@ def add_corrupted_bytes(board, corrupted_coordinates, byte_fallen):
     if len(corrupted_coordinates) < byte_fallen:
         raise ValueError("<byte_fallen> must be a higher value than length of <corrupted_coordinates>")
 
+    # Make a copy of the board
+    corrupted_board = [row[:] for row in board]
+
     for i in range(byte_fallen):
         x, y = corrupted_coordinates[i][0], corrupted_coordinates[i][1]
-        board[y][x] = CORRUPTED
+        corrupted_board[y][x] = CORRUPTED
+
+    return corrupted_board
 
 
 def find_shortest_path(start_pos, end_pos, board):
@@ -92,12 +97,44 @@ def solve(input_file, board_size, byte_fallen):
     """
     board = create_board(board_size)
     corrupted_bytes = read_corrupted_coordinates(input_file)
-    add_corrupted_bytes(board, corrupted_bytes, byte_fallen)
-    print_board(board)
-    return find_shortest_path((0, 0), (board_size - 1, board_size - 1), board)
+    corrupted_board = add_corrupted_bytes(board, corrupted_bytes, byte_fallen)
+    # print_board(board)
+    return find_shortest_path((0, 0), (board_size - 1, board_size - 1), corrupted_board)
 
+# Part 2 Code goes here
+# NOTE: Binary Search helps narrowing down which amount of byte_fallen to check
+
+def find_min_path_end(board, corrupted_bytes):
+    num_corrupted = len(corrupted_bytes)
+    left, right = 0, num_corrupted
+    
+    blocking_byte = (0, 0)
+
+    while left <= right:
+        mid = (left + right) // 2
+        print(mid, corrupted_bytes[mid])
+        
+        test_board = add_corrupted_bytes(board, corrupted_bytes, mid+1)
+
+        if find_shortest_path((0, 0), (board_size - 1, board_size - 1), test_board) != -1: # No blockage occurs
+            left = mid + 1 # Narrow search from mid to right
+        else:   # Blockage occurs
+            blocking_byte = corrupted_bytes[mid] # Save potential first blocking byte
+            right = mid - 1 # Narrow search from left to mid
+
+    return blocking_byte
+
+
+def solve_part2(input_file, board_size, byte_fallen):
+    """
+    Produce the solution to the day 18 problem - RAM Run
+    """
+    board = create_board(board_size)
+    corrupted_bytes = read_corrupted_coordinates(input_file)
+    return find_min_path_end(board, corrupted_bytes)
 
 if __name__ == "__main__":
     input, board_size, byte_fallen = 'input.txt', 71, 1024
     # input, board_size, byte_fallen = 'test.txt', 7, 12
     print(solve(input, board_size, byte_fallen))
+    print(solve_part2(input, board_size, byte_fallen))
