@@ -226,6 +226,6 @@ def highlight_best_path_tiles(board, best_tiles):
 
 
 if __name__ == "__main__":
-    # input = 'input.txt'
-    input = 'test.txt'
+    input = 'input.txt'
+    # input = 'test.txt'
     print(solve(input)) # This should solve both part 1 and part 2
