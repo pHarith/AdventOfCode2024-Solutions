@@ -127,6 +127,78 @@ def find_viable_cheats(board, dist_to, save_threshold):
 
     return len(valid_cheats)
 
+
+# PART 2:
+# Adjust the cheat searching phase by using a BFS
+def find_viable_cheats(board, dist_to, save_threshold):
+    path_tiles = [tile for tile in dist_to.keys()]
+    valid_cheats = []
+    num_rows, num_cols = len(board), len(board[0])
+
+    def is_valid_move(pos):
+        """
+        Returns if move made by the user is valid.
+        
+        :param pos: (x, y) - where x is the x coordinate of the object on the board
+        and y is the y-coordinate of the object on the board.
+        """
+        x, y = pos
+        if 0 <= x < num_cols and 0 <= y < num_rows:
+            return board[y][x] != WALL
+        return False
+    
+    def is_wall(pos):
+        x, y = pos
+        if 0 <= x < num_cols and 0 <= y < num_rows:
+            return board[y][x] == WALL
+        return False
+    
+    def find_cheat_paths(pos, cheat_limit):
+        """
+        Return a list of end_pos of any valid paths.
+        
+        :param pos: the current position in the maze.
+        """
+        cheat_ends = []
+
+        # Initialize path and visited set
+        cheat_queue = [(1, pos)] # path stores (<cheat distance>, <curr_pos>)
+        queue = deque(cheat_queue)
+        visited = set()
+        visited.add(pos)
+
+        while queue:
+            dist, curr_pos = queue.popleft()
+
+            if dist > cheat_limit:
+                return cheat_ends
+            
+            for vector in movement_vectors.values():
+                new_pos = sum_tuple(curr_pos, vector)
+                if is_wall(new_pos) and new_pos not in visited:
+                    visited.add(new_pos)
+                    queue.append((dist + 1, new_pos))
+
+
+
+
+    for curr_pos in path_tiles:
+        for move in [UP, DOWN, LEFT, RIGHT]:
+            # Check for any walls adjacent to it
+            pos_1 = sum_tuple(curr_pos, movement_vectors[move])
+
+            # Not a wall, skip to the next move
+            if is_valid_move(pos_1):
+                continue
+
+            # Wall found, pass pos_1 into bfs search
+            cheat_end_pos = find_cheat_paths(pos_1)  # Append the end position of any possible cheat paths that pass the threshold
+
+            if cheat_end_pos is not None:
+                for end in cheat_end_pos:
+                    valid_cheats.append((curr_pos, end))
+
+    return len(valid_cheats)
             
 
 def print_board(board):
