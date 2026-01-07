@@ -130,7 +130,7 @@ def find_viable_cheats(board, dist_to, save_threshold):
 
 # PART 2:
 # Adjust the cheat searching phase by using a BFS
-def find_viable_cheats(board, dist_to, save_threshold):
+def find_viable_cheats_2(board, dist_to, save_threshold):
     path_tiles = [tile for tile in dist_to.keys()]
     valid_cheats = []
     num_rows, num_cols = len(board), len(board[0])
@@ -142,16 +142,20 @@ def find_viable_cheats(board, dist_to, save_threshold):
         :param pos: (x, y) - where x is the x coordinate of the object on the board
         and y is the y-coordinate of the object on the board.
         """
+        return not (is_out_of_bounds(pos) or is_wall(pos))
+
+    def is_out_of_bounds(pos):
+        """
+        Returns if move made by the user is out of bounds of the board
+        
+        :param pos: (x, y) - where x is the x coordinate of the object on the board
+        and y is the y-coordinate of the object on the board.
+        """
         x, y = pos
-        if 0 <= x < num_cols and 0 <= y < num_rows:
-            return board[y][x] != WALL
-        return False
+        return not(0 <= x < num_cols and 0 <= y < num_rows)
     
     def is_wall(pos):
-        x, y = pos
-        if 0 <= x < num_cols and 0 <= y < num_rows:
-            return board[y][x] == WALL
-        return False
+        return not is_out_of_bounds(pos) and board[pos[1]][pos[0]] == WALL
     
     def find_cheat_paths(pos, cheat_limit):
         """
@@ -162,40 +166,44 @@ def find_viable_cheats(board, dist_to, save_threshold):
         cheat_ends = []
 
         # Initialize path and visited set
-        cheat_queue = [(1, pos)] # path stores (<cheat distance>, <curr_pos>)
+        cheat_queue = [(0, pos)] # path stores (<cheat distance>, <curr_pos>)
         queue = deque(cheat_queue)
         visited = set()
-        visited.add(pos)
 
         while queue:
             dist, curr_pos = queue.popleft()
 
-            if dist > cheat_limit:
-                return cheat_ends
+            if dist >= cheat_limit:  # Surpassed 20 ps cheat limit, search a different tile
+                continue
             
             for vector in movement_vectors.values():
-                new_pos = sum_tuple(curr_pos, vector)
-                if is_wall(new_pos) and new_pos not in visited:
-                    visited.add(new_pos)
-                    queue.append((dist + 1, new_pos))
+                new_pos = sum_tuple(curr_pos, vector)   # Compute new position after moving
 
+                if new_pos in visited or is_out_of_bounds(new_pos):
+                    continue
 
+                # Mark the new position as visited
+                visited.add(new_pos)
+                new_dist = dist + 1
 
+                # Check if the new position is a free space or a wall
+                if is_valid_move(new_pos) and new_pos in dist_to and dist_to[new_pos] > dist_to[pos]:   # is a space on the path and moves us forward in the maze
+                    cheat_ends.append((new_dist, new_pos))
+                    queue.append((new_dist, new_pos))
+                else:
+                    # new pos is a wall, we continue searching through it
+                    queue.append((new_dist, new_pos))    
 
+        return cheat_ends
+    
     for curr_pos in path_tiles:
-        for move in [UP, DOWN, LEFT, RIGHT]:
-            # Check for any walls adjacent to it
-            pos_1 = sum_tuple(curr_pos, movement_vectors[move])
-
-            # Not a wall, skip to the next move
-            if is_valid_move(pos_1):
-                continue
-
-            # Wall found, pass pos_1 into bfs search
-            cheat_end_pos = find_cheat_paths(pos_1)  # Append the end position of any possible cheat paths that pass the threshold
-
-            if cheat_end_pos is not None:
-                for end in cheat_end_pos:
+        cheat_end_pos = find_cheat_paths(curr_pos, cheat_limit=20)  # Append the end position of any possible cheat paths that pass the threshold
+        print(f"From {curr_pos}: found {len(cheat_end_pos)} potential cheats")
+        if cheat_end_pos is not None:
+            for cheat_dist, end in cheat_end_pos:
+                saving = dist_to[end] - dist_to[curr_pos] - cheat_dist  # Compute the amounts of picoseconds saved
+            
+                if saving >= save_threshold:    # Cheat saved at least <save_threshold> seconds
                     valid_cheats.append((curr_pos, end))
 
     return len(valid_cheats)
@@ -220,7 +228,7 @@ def solve(input_file):
     time, dist_to = find_shortest_path(start, end, board)
 
     # Return list of viable cheats
-    return find_viable_cheats(board, dist_to, save_threshold=100)
+    return find_viable_cheats_2(board, dist_to, save_threshold=100)
 
 
 if __name__ == "__main__":
