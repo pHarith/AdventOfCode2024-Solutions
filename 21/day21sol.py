@@ -17,8 +17,8 @@ def init_directional_keypad():
 def init_numeric_keypad():
     pass
 
-def compute_complexity_score():
-    pass
+def compute_complexity_score(code_numeric, sequence_length):
+    return code_numeric * sequence_length
 
 
 def solve(input_file):
