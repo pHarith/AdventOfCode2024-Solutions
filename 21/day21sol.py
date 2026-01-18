@@ -14,21 +14,40 @@ def read_input(input_file):
     with open(input_file, "r") as numeric_file:
         return [line.strip() for line in numeric_file]
 
-def init_directional_keypad():
+def init_numeric_keypad():
     """
-    Returns a dictionary that represents the directional keypad
+    Returns a dictionary that represents the numeric keypad
     """
     return {(0, 0): '7', (0, 1): '8', (0, 2): '9',
             (1, 0): '4', (1, 1): '5', (1, 2): '6',
             (2, 0): '1', (2, 1): '2', (2, 2): '3',
             (3, 0): None, (3, 1): '0', (3, 2): 'A'}
 
-def init_numeric_keypad():
+def init_directional_keypad():
     """
-    Returns a dictionary that represents the numeric keypad
+    Returns a dictionary that represents the directional keypad
     """
     return {(0, 0): None, (0, 1): UP, (0, 2): 'A',
             (1, 0): LEFT, (1, 1): DOWN, (1, 2): RIGHT}
+
+def get_keypad_presses(target_code, keypad_type):
+    """
+    Based on <keypad_type>, find and generate a string sequence such that the <target_code>
+    can be obtained using that keypad.
+    
+    :param target_code: A numeric or directional code, in string format.
+    :param keypad_type: numeric keypad or directional keypad
+    """
+    return
+
+def find_path(start_button, end_button, keypad):
+    """
+    Find the best path between <start_button> and <end_button> on <keypad>
+    
+    :param start_button: string representing the button we are on.
+    :param end_button: string representing the button we want our both to move to and press.
+    :param keypad: dictionary which describes a keypad, numeric or directional.
+    """
 
 def compute_complexity_score(code_numeric, sequence_length):
     return code_numeric * sequence_length
