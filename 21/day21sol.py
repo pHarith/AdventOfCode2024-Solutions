@@ -38,7 +38,29 @@ def get_keypad_presses(target_code, keypad_type):
     :param target_code: A numeric or directional code, in string format.
     :param keypad_type: numeric keypad or directional keypad
     """
-    return
+    if keypad_type == "numeric":
+        keypad = init_numeric_keypad()
+    elif keypad_type == "directional":
+        keypad = init_directional_keypad
+    else:
+        raise ValueError('<keypad_type> must be "numeric" or "directional".')
+    
+    # Initialize position at "A"
+    curr_pos = keypad.keys()[keypad.values.index("A")]
+
+
+    # Initial keypad sequence
+    result = ""
+
+    for char in target_code:
+        # Find path from current pos to the postion of the character:
+        path = find_path(curr_pos, char, keypad)
+
+        result += path + "A"
+
+        curr_pos = char
+
+    return result
 
 def find_path(start_button, end_button, keypad):
     """
