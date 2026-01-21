@@ -53,23 +53,48 @@ def get_keypad_presses(target_code, keypad_type):
     result = ""
 
     for char in target_code:
+
+        char_pos = keypad.keys()[keypad.values.index(char)]
         # Find path from current pos to the postion of the character:
-        path = find_path(curr_pos, char, keypad)
+        path = find_path(curr_pos, char_pos, keypad)
 
         result += path + "A"
 
-        curr_pos = char
+        curr_pos = char_pos
 
     return result
 
-def find_path(start_button, end_button, keypad):
+def find_path(start_pos, end_pos, keypad):
     """
-    Find the best path between <start_button> and <end_button> on <keypad>
+    Find the best path between <start_pos> and <end_pos> on <keypad>
     
-    :param start_button: string representing the button we are on.
-    :param end_button: string representing the button we want our both to move to and press.
+    :param start_pos: position of the button we are on.
+    :param end_pos: position of the button we want our both to move to and press.
     :param keypad: dictionary which describes a keypad, numeric or directional.
     """
+    path = ""
+
+    # Compute the manhatten distance to move from start_pos to end_pos
+    dx, dy = end_pos[0] - start_pos[0], end_pos[1] - start_pos[1]
+
+    # NOTE: To optimize movement, group horizontal or vertical movements together. This way, robots controlling on the 
+    # upper layers would only have to move to a button once, then press A as needed.
+
+    hori_dir = LEFT if dx < 0 else RIGHT
+    hori_movements = [movement_vectors[hori_dir]] * abs(dx)
+    verti_dir = UP if dy > 0 else DOWN
+    verti_movements = [movement_vectors[verti_dir]] * abs(dy)
+
+    # TODO: Write a function to test if which arrangements of movement is ideal
+
+    # Test horizontal moves first, vertical moves later
+
+    # Test vertical moves first, horizontal moves later
+
+    
+
+    return path
+
 
 def compute_complexity_score(code_numeric, sequence_length):
     return code_numeric * sequence_length
