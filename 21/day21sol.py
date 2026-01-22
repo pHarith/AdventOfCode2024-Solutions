@@ -13,6 +13,9 @@ movement_vectors = {UP: (0, -1), RIGHT: (1, 0), DOWN: (0, 1), LEFT: (-1, 0)}
 def read_input(input_file):
     with open(input_file, "r") as numeric_file:
         return [line.strip() for line in numeric_file]
+    
+def sum_tuple(a, b):
+    return (a[0] + b[0], a[1] + b[1])
 
 def init_numeric_keypad():
     """
@@ -88,12 +91,38 @@ def find_path(start_pos, end_pos, keypad):
     # TODO: Write a function to test if which arrangements of movement is ideal
 
     # Test horizontal moves first, vertical moves later
+    if test_path(start_pos, end_pos, hori_movements + verti_movements, keypad):
+        path = hori_dir * abs(dx) + verti_dir * abs(dy)
 
     # Test vertical moves first, horizontal moves later
-
+    if test_path(start_pos, end_pos, verti_movements + hori_movements, keypad):
+        path = verti_dir * abs(dy) + hori_dir * abs(dx)
     
-
     return path
+
+def test_path(start_pos, end_pos, moves_list, keypad):
+    """
+    Given a path, test if it reaches <end_pos> from <start_pos> without 
+    crossing the gap on the keypad.
+    """
+    curr_pos = start_pos
+    next_pos = (0, 0)
+    for move in moves_list:
+        next_pos = sum_tuple(curr_pos, move)
+        if keypad[next_pos] == None:
+            return False
+        curr_pos = next_pos
+    return next_pos == end_pos
+
+def extract_numeric_code(code):
+    num_code = ""
+    for char in code:
+        if char.isdigit():
+            num_code += char
+    try:
+        return int(num_code)
+    except ValueError:
+        return -1
 
 
 def compute_complexity_score(code_numeric, sequence_length):
@@ -104,7 +133,17 @@ def solve(input_file):
     """
     Produce the solution to the day 21 problem - Keypad Conundrum
     """
-    return read_input(input_file)
+    codes = read_input(input_file)
+
+    for code in codes:
+        # TODO: implement keypad presses for each robot layer
+        code_a = ''
+
+        code_robot_b = ''
+
+        code_robot_c = ''
+
+    pass
 
 
 if __name__ == "__main__":
