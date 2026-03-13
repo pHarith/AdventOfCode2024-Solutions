@@ -6,8 +6,12 @@
 # 3. Compute the complexity score of each input 
 # 4. Sum the complexity score and return
 
+import math
+
+# NOTE: using (row, col) for this problem
+
 UP, DOWN, LEFT, RIGHT = '^', 'v', '<', '>'
-movement_vectors = {UP: (0, -1), RIGHT: (1, 0), DOWN: (0, 1), LEFT: (-1, 0)} 
+movement_vectors = {UP: (-1, 0), RIGHT: (0, 1), DOWN: (1, 0), LEFT: (0, -1)} 
 
 # Read the input from the input file
 def read_input(input_file):
@@ -33,87 +37,19 @@ def init_directional_keypad():
     return {(0, 0): None, (0, 1): UP, (0, 2): 'A',
             (1, 0): LEFT, (1, 1): DOWN, (1, 2): RIGHT}
 
-def get_keypad_presses(target_code, keypad_type):
+
+# Helper function to get the coordinate of button in the keypad dictionary
+def get_button_position(keypad, button):
     """
-    Based on <keypad_type>, find and generate a string sequence such that the <target_code>
-    can be obtained using that keypad.
-    
-    :param target_code: A numeric or directional code, in string format.
-    :param keypad_type: numeric keypad or directional keypad
+    Given a <keypad> dict and a <button> value, return its (row, col) coordinate.
     """
-    if keypad_type == "numeric":
-        keypad = init_numeric_keypad()
-    elif keypad_type == "directional":
-        keypad = init_directional_keypad
-    else:
-        raise ValueError('<keypad_type> must be "numeric" or "directional".')
-    
-    # Initialize position at "A"
-    curr_pos = keypad.keys()[keypad.values.index("A")]
+    # Extract the button coordinate into a list
+    button = [k for k, v in keypad.items() if v == button]
 
+    # Return the first element of the list (sole button)
+    return button[0] if button else -1
 
-    # Initial keypad sequence
-    result = ""
-
-    for char in target_code:
-
-        char_pos = keypad.keys()[keypad.values.index(char)]
-        # Find path from current pos to the postion of the character:
-        path = find_path(curr_pos, char_pos, keypad)
-
-        result += path + "A"
-
-        curr_pos = char_pos
-
-    return result
-
-def find_path(start_pos, end_pos, keypad):
-    """
-    Find the best path between <start_pos> and <end_pos> on <keypad>
-    
-    :param start_pos: position of the button we are on.
-    :param end_pos: position of the button we want our both to move to and press.
-    :param keypad: dictionary which describes a keypad, numeric or directional.
-    """
-    path = ""
-
-    # Compute the manhatten distance to move from start_pos to end_pos
-    dx, dy = end_pos[0] - start_pos[0], end_pos[1] - start_pos[1]
-
-    # NOTE: To optimize movement, group horizontal or vertical movements together. This way, robots controlling on the 
-    # upper layers would only have to move to a button once, then press A as needed.
-
-    hori_dir = LEFT if dx < 0 else RIGHT
-    hori_movements = [movement_vectors[hori_dir]] * abs(dx)
-    verti_dir = UP if dy > 0 else DOWN
-    verti_movements = [movement_vectors[verti_dir]] * abs(dy)
-
-    # TODO: Write a function to test if which arrangements of movement is ideal
-
-    # Test horizontal moves first, vertical moves later
-    if test_path(start_pos, end_pos, hori_movements + verti_movements, keypad):
-        path = hori_dir * abs(dx) + verti_dir * abs(dy)
-
-    # Test vertical moves first, horizontal moves later
-    if test_path(start_pos, end_pos, verti_movements + hori_movements, keypad):
-        path = verti_dir * abs(dy) + hori_dir * abs(dx)
-    
-    return path
-
-def test_path(start_pos, end_pos, moves_list, keypad):
-    """
-    Given a path, test if it reaches <end_pos> from <start_pos> without 
-    crossing the gap on the keypad.
-    """
-    curr_pos = start_pos
-    next_pos = (0, 0)
-    for move in moves_list:
-        next_pos = sum_tuple(curr_pos, move)
-        if keypad[next_pos] == None:
-            return False
-        curr_pos = next_pos
-    return next_pos == end_pos
-
+# Helper function to extract numeric paths of a door code
 def extract_numeric_code(code):
     num_code = ""
     for char in code:
@@ -122,28 +58,118 @@ def extract_numeric_code(code):
     try:
         return int(num_code)
     except ValueError:
-        return -1
+        raise ValueError("Num code extraction failed.")
 
+def get_paths(start_pos, end_pos, keypad):
+    """
+    Given start_pos and end_pos, return a list of paths from one to the other on
+    the <keypad>.
+    """
+    paths = []
 
-def compute_complexity_score(code_numeric, sequence_length):
-    return code_numeric * sequence_length
+    # Base case: same button, press A to return
+    if start_pos == end_pos:
+        return ['A']
 
+    # Inner helper function:
+    def test_path(path):
+        curr_pos = start_pos
+        next_pos = None
+        for move in path:
+            next_pos = sum_tuple(curr_pos, move)
+            if next_pos in keypad:
+                # Filter out paths that steps on None space
+                if keypad[next_pos] == None:
+                    return False
+                curr_pos = next_pos
+            else:
+                return False
+        return next_pos == end_pos
 
+    # NOTE: coordinates are (row, cols)
+
+    # Compute the change in rows and cols on the keypad
+    d_row, d_col = end_pos[0] - start_pos[0], end_pos[1] - start_pos[1]
+
+    # Determine the direction of movement
+    hori_dir = LEFT if d_col < 0 else RIGHT
+    vert_dir = UP if d_row < 0 else DOWN
+
+    # Build movements as a list
+    hori_movements = [movement_vectors[hori_dir]] * abs(d_col)
+    vert_movements = [movement_vectors[vert_dir]] * abs(d_row)
+
+    # Test paths from start to end
+    for path in [hori_movements + vert_movements, vert_movements + hori_movements]:
+        if test_path(path): # path test successful; does not move over gaps
+            
+            # Convert movement into path (string) of buttons on keypad
+            path_string = "".join([dir for move in path for dir in get_button_position(movement_vectors, move)]) + "A"
+
+            if path_string not in paths:
+                paths.append(path_string) # Add unqiue paths to the list to be returned
+    return paths
+        
 def solve(input_file):
     """
     Produce the solution to the day 21 problem - Keypad Conundrum
     """
     codes = read_input(input_file)
+    complexity_score = 0
 
     for code in codes:
-        # TODO: implement keypad presses for each robot layer
-        code_a = ''
+        numeric_code = extract_numeric_code(code)
+        
+        shortest_path = solve_helper(code, depth=3)
 
-        code_robot_b = ''
+        complexity = numeric_code * len(shortest_path)
 
-        code_robot_c = ''
+        complexity_score += complexity
+    return complexity_score
 
-    pass
+memo = {}
+
+def solve_helper(target_code, depth):
+    # Base case: we reached the user
+    if depth == 0:
+        #print(f"base case reached, returning {target_code}")
+        return target_code
+    
+    if (target_code, depth) in memo:
+        return memo[(target_code, depth)]
+    
+    if depth == 3: # Not numeric pad
+        keypad = init_numeric_keypad()
+    else:
+        keypad = init_directional_keypad()
+
+    # Initialize the current position
+    curr_pos = get_button_position(keypad, "A")
+
+    # Initialize the full shortest sequence
+    full_shortest_sequence = ""
+    
+    # Recursive Case: We want to pick the minimum length sequence for each layer
+    for char in target_code:
+        char_pos = get_button_position(keypad, char)
+        all_paths = get_paths(curr_pos, char_pos, keypad)
+
+        min_sequence = None
+
+        for path in all_paths:
+            path_sequence = solve_helper(path, depth - 1)
+            if min_sequence is None:
+                min_sequence = path_sequence
+            else:
+                min_sequence = min(min_sequence, path_sequence, key=len)
+
+        if min_sequence is not None:
+            full_shortest_sequence += min_sequence
+        
+        curr_pos = char_pos
+
+    memo[(target_code, depth)] = full_shortest_sequence
+    return full_shortest_sequence
 
 
 if __name__ == "__main__":
