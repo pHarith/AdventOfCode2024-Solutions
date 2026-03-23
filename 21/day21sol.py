@@ -65,11 +65,11 @@ def get_paths(start_pos, end_pos, keypad):
     Given start_pos and end_pos, return a list of paths from one to the other on
     the <keypad>.
     """
-    paths = []
-
-    # Base case: same button, press A to return
+    # Base case: if we are pressing the same button, return just 'A'
     if start_pos == end_pos:
         return ['A']
+
+    paths = []
 
     # Inner helper function:
     def test_path(path):
@@ -110,7 +110,7 @@ def get_paths(start_pos, end_pos, keypad):
                 paths.append(path_string) # Add unqiue paths to the list to be returned
     return paths
         
-def solve(input_file):
+def solve(input_file, depth):
     """
     Produce the solution to the day 21 problem - Keypad Conundrum
     """
@@ -120,25 +120,28 @@ def solve(input_file):
     for code in codes:
         numeric_code = extract_numeric_code(code)
         
-        shortest_path = solve_helper(code, depth=3)
+        # shortest_path = solve_helper(code, depth)
+        # complexity = numeric_code * len(shortest_path)
 
-        complexity = numeric_code * len(shortest_path)
+        shortest_path_len = solve_helper(code, depth, depth)
+        complexity = numeric_code * shortest_path_len
 
         complexity_score += complexity
     return complexity_score
 
 memo = {}
 
-def solve_helper(target_code, depth):
+def solve_helper(target_code, depth, max_depth):
+    # NOTE: commented out previous implementation in part 1 to resolve runtime issues.
     # Base case: we reached the user
     if depth == 0:
-        #print(f"base case reached, returning {target_code}")
-        return target_code
+        # return target_code
+        return len(target_code)
     
     if (target_code, depth) in memo:
         return memo[(target_code, depth)]
     
-    if depth == 3: # Not numeric pad
+    if depth == max_depth: # Highest depth is numerical keypad
         keypad = init_numeric_keypad()
     else:
         keypad = init_directional_keypad()
@@ -147,32 +150,55 @@ def solve_helper(target_code, depth):
     curr_pos = get_button_position(keypad, "A")
 
     # Initialize the full shortest sequence
-    full_shortest_sequence = ""
+    # full_shortest_sequence = ""
+    full_shortest_sequence_length = 0
     
     # Recursive Case: We want to pick the minimum length sequence for each layer
     for char in target_code:
         char_pos = get_button_position(keypad, char)
+        
         all_paths = get_paths(curr_pos, char_pos, keypad)
 
-        min_sequence = None
+        # min_sequence = None
+
+        min_sequence_length = None
 
         for path in all_paths:
-            path_sequence = solve_helper(path, depth - 1)
-            if min_sequence is None:
+            # path_sequence = solve_helper(path, depth - 1)
+            path_sequence_length = solve_helper(path, depth - 1, max_depth)
+            '''if min_sequence is None:
                 min_sequence = path_sequence
             else:
                 min_sequence = min(min_sequence, path_sequence, key=len)
-
+                
         if min_sequence is not None:
             full_shortest_sequence += min_sequence
+            '''
+            
+            if min_sequence_length is None:
+                min_sequence_length = path_sequence_length
+            else:
+                min_sequence_length = min(min_sequence_length, path_sequence_length)
+
+        if min_sequence_length is not None:
+            full_shortest_sequence_length += min_sequence_length
         
         curr_pos = char_pos
 
-    memo[(target_code, depth)] = full_shortest_sequence
-    return full_shortest_sequence
+    # memo[(target_code, depth)] = full_shortest_sequence
+    # return full_shortest_sequence
+
+    memo[(target_code, depth)] = full_shortest_sequence_length
+    return full_shortest_sequence_length
 
 
 if __name__ == "__main__":
+    
     input = 'input.txt'
     # input = 'test.txt'
-    print(solve(input))
+
+    # Solution to part 1
+    print('Part 1 solution is:', solve(input, depth = 3))
+
+    # Solution to part 2
+    print('Part 2 solution is:', solve(input, depth = 26))
