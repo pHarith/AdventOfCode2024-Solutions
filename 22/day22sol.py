@@ -1,11 +1,20 @@
 # Solution to day 22: Monkey Market
-#### SUMMARY OF TASKS ####
-# 1. 
 
 
-        
+def mix_number(num):
+    """
+    Mix the numbers according to the problem's description.
+    """        
+    pass
 
+def prune_number(num):
+    """
+    Prune the number <num> according to the problem's description.
+    """        
+    pass
 
+def read_input():
+    pass
 
 def solve(input_file):
     """
