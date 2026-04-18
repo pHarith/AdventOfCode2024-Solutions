@@ -40,7 +40,7 @@ def solve(input_file):
 
     return len(valid_trios)
 
-def solve_part2(input_file)
+def solve_part2(input_file):
     """
     Produce the solution to part 2 of day 23 problem - LAN Party
     """
@@ -48,7 +48,7 @@ def solve_part2(input_file)
     
 
     # TODO: Implement the bron-kerbosch algorithm to build the largest LAN party
-    def bron_kerbosch(R=set(), P=computers, X=set(), connections=connections, largest):
+    def bron_kerbosch(R=set(), P=computers, X=set(), connections=connections, largest=set()):
         """ 
         Build <largest> recursively using <connections> where:
         R: the maximal clique, the largest clique in.
