@@ -40,6 +40,22 @@ def solve(input_file):
 
     return len(valid_trios)
 
+
+# Helper function
+def get_neighbors(node, connections):
+    """
+    Return a set of adjacent nodes to <node> in connections.
+    """
+    neighbors = set()
+    for pair in connections:
+        if node == pair[0]:
+            neighbors.add(pair[1])
+
+        elif node == pair[1]:
+            neighbors.add(pair[0])
+
+    return neighbors
+
 def solve_part2(input_file):
     """
     Produce the solution to part 2 of day 23 problem - LAN Party
@@ -62,8 +78,21 @@ def solve_part2(input_file):
             largest = R
 
         # Recursive case:
-        # TODO: work on recursive condition
-    
+        # Iterate through each candidate in P
+        for candidate in P:
+
+            # Add candidate to R
+            R.add(candidate)
+
+            neighbors = get_neighbors(candidate, connections)
+
+            # For the next iteration, eliminate nodes that are not neighbors 
+            # from both explored and not explored sets
+            P = P.intersect(neighbors)
+
+            X = X.intersect(neighbors)
+
+            largest = bron_kerbosch(R, P, X)
     
         return largest
 
