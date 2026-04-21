@@ -64,7 +64,7 @@ def solve_part2(input_file):
     
 
     # TODO: Implement the bron-kerbosch algorithm to build the largest LAN party
-    def bron_kerbosch(R=set(), P=computers, X=set(), connections=connections, largest=set()):
+    def bron_kerbosch(R, P, X, connections=connections):
         """ 
         Build <largest> recursively using <connections> where:
         R: the maximal clique, the largest clique in.
@@ -75,32 +75,46 @@ def solve_part2(input_file):
         # Base case: 
         # Check if R is maximal - R is maximal if we can't add anymore from P nor X
         if len(P) == 0 and len(X) == 0:
-            largest = R
+            return R
+
+        # Initialize a copy of the largest (set) LAN party
+        largest = R
 
         # Recursive case:
-        # Iterate through each candidate in P
-        for candidate in P:
-
-            # Add candidate to R
-            R.add(candidate)
-
+        # Iterate through each candidate with a list copy of P
+        # NOTE: this is to avoid runtime issues and alter P in the next recursive steps 
+        # and not in the current one
+        for candidate in list(P):
+            # Grab neighbors of the candidate
             neighbors = get_neighbors(candidate, connections)
 
-            # For the next iteration, eliminate nodes that are not neighbors 
-            # from both explored and not explored sets
-            P = P.intersect(neighbors)
+            # For the next iteration, update R, P and X
 
-            X = X.intersect(neighbors)
+            # Update R to include the current candidate
+            R_new = R.union({candidate})
 
-            largest = bron_kerbosch(R, P, X)
+            # Eliminate nodes in P that are not neighbors of the current candidate
+            P_new = P.intersection(neighbors)
+
+            # Eliminiate nodes in X that are are not neighbors of the current candidate,
+            # in case we need to backtrack to explored nodes from previous recursions
+            X_new = X.intersection(neighbors)
+
+            # Update the largest set based on length
+            largest = max(largest, bron_kerbosch(R_new, P_new, X_new), key=len)
+
+            # Remove candidate from P and add candidate
+            P.remove(candidate)
+            X.add(candidate)
     
         return largest
 
 
-    password = ""
+    lan_party = bron_kerbosch(R=set(), P=computers, X=set())
     # TODO: Form the password to the largest LAN party by:
     # 1. arrange all computers returned from the helper function in alphabetical order
     # 2. concaternate into a string, separated by commas
+    password = ",".join((sorted(lan_party)))
 
     return password
 
