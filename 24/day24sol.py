@@ -1,7 +1,15 @@
 # Solution to day 24: Crossed Wires
-#### SUMMARY OF TASKS ####
-# 1. 
 
+
+def read_wire_config(input_file):
+    pass
+
+
+def read_z_binary():
+    """
+    Return the binary and decimal value of the results written into
+    the z wires
+    """
 
         
 
