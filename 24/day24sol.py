@@ -29,12 +29,17 @@ def read_wire_config(input_file):
     return wires, gates
 
 
-def read_z_binary():
+def read_binary_str():
     """
-    Return the binary and decimal value of the results written into
-    the z wires
+    Return decimal value of a binary string
     """
+    return
 
+def extract_binary_from_wires(wires, target):
+    """
+    
+    """
+    return
 
 def compute_gates(wires, gates):
     # TODO: implement function to loop over <gates>, while checking preexisting wires until there are no more gates operation to perform
@@ -54,7 +59,8 @@ def compute_gates(wires, gates):
     # Make a shallow copy of all gates operations
     unsolved_gates = gates.copy()
 
-    while not unsolved_gates:
+    # Iterate until there are no more unsolved gates
+    while unsolved_gates:
         # Make a secondary shallow copy to avoid unintended Runtime Errors
         for output_wire in unsolved_gates.copy():
             input1, input2, operation = unsolved_gates[output_wire]
@@ -62,18 +68,6 @@ def compute_gates(wires, gates):
                 wires[output_wire] = gate_operation(input1, input2, operation)
                 unsolved_gates.pop(output_wire, None)
     return
-
-def gate_operation(input1, input2, operation):
-    # TODO: implement the logic of gate operations
-    match operation:
-        case 'AND':
-            return
-        case 'OR':
-            return
-        case 'XOR':
-            return 
-        case _:
-            return -1
 
 
 def solve(input_file):
@@ -83,12 +77,14 @@ def solve(input_file):
     # Read the wire values and logic gates
     wires, gates = read_wire_config(input_file)
 
-    # TODO: Function to iterate through the program's gates configuration
-    # write values to existing or new wires
+    
+    compute_gates(wires, gates)
+
+    # TODO: filter out desired wires and arrange them into a binary string
 
 
-
-    return 
+    # TODO: convert the binary string into a decimal
+    return read_binary_str()
 
 
 if __name__ == "__main__":
