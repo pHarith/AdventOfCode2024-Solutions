@@ -39,6 +39,18 @@ def read_z_binary():
 def compute_gates(wires, gates):
     # TODO: implement function to loop over <gates>, while checking preexisting wires until there are no more gates operation to perform
 
+    # Helper function to compute gate operations (tuples)
+    def gate_operation(input1, input2, operation):
+        match operation:
+            case 'AND':
+                return wires[input1] & wires[input2]
+            case 'OR':
+                return wires[input1] | wires[input2]
+            case 'XOR':
+                return wires[input1] ^ wires[input2]
+            case _:
+                raise ValueError(f"Unknown operation: {operation}")
+
     # Make a shallow copy of all gates operations
     unsolved_gates = gates.copy()
 
