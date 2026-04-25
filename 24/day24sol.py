@@ -15,34 +15,35 @@ def read_wire_config(input_file):
 
         for line in wire_info.split('\n'):
             wire, value = line.strip().split(':')
-            wires[wire] = int(value)
+            wires[wire.strip()] = int(value.strip())
 
         for line in gates_info.split('\n'):
             inputs, output = line.strip().split('->')
 
-            input1, gate, input2 = inputs.strip().split(' ')
+            input1, gate, input2 = inputs.strip().split()
             
-            # NOTE: changed gates structure by using output wire as keys to ensure uniqueness
-            # NOTE: also helps with later helper function as the values are immutable so shallow copy works
-            gates[output] = (input1, input2, gate)
+            gates[output.strip()] = (input1.strip(), input2.strip(), gate.strip())
             
     return wires, gates
 
-
-def read_binary_str():
-    """
-    Return decimal value of a binary string
-    """
-    return
-
 def extract_binary_from_wires(wires, target):
     """
-    
+    Given a dictionary of wires, extract the values of any wire starting with <target>
+    and return the binary value string of the extracted values.
     """
-    return
+    
+    # Filter out the desired wires into a list and get them sorted
+    target_wires_sorted = sorted([wire for wire in wires if wire.startswith(target)])
+
+    try:
+        binary_str = "".join([str(wires[wire]) for wire in target_wires_sorted])
+    except ValueError:
+        raise ValueError("Incorrect Input.")
+
+    # NOTE: the binary string is in reverse, so return it in reversed
+    return binary_str[::-1]
 
 def compute_gates(wires, gates):
-    # TODO: implement function to loop over <gates>, while checking preexisting wires until there are no more gates operation to perform
 
     # Helper function to compute gate operations (tuples)
     def gate_operation(input1, input2, operation):
@@ -76,19 +77,16 @@ def solve(input_file):
     """
     # Read the wire values and logic gates
     wires, gates = read_wire_config(input_file)
-
     
     compute_gates(wires, gates)
 
-    # TODO: filter out desired wires and arrange them into a binary string
+    binary_str = extract_binary_from_wires(wires, target='z')
 
-
-    # TODO: convert the binary string into a decimal
-    return read_binary_str()
+    return int(binary_str, 2)
 
 
 if __name__ == "__main__":
     input = 'input.txt'
-    input = 'test.txt'
+    # input = 'test.txt'
     # input = 'smalltest.txt'
     print(solve(input))
