@@ -85,6 +85,28 @@ def solve(input_file):
     return int(binary_str, 2)
 
 
+
+#### PART 2 ####
+
+# Helper functions
+
+def find_swappped_wires(gates):
+    """
+    Given the dictionary <gates>, find and return pairs of swapped wires that cause that incorrect addition.
+    """
+    return
+
+
+
+
+
+
+def solve_part2(input_file):
+    """
+    Produce the solution to part 2 of the day 24 problem - Crossed Wires
+    """
+    return 
+
 if __name__ == "__main__":
     input = 'input.txt'
     # input = 'test.txt'
