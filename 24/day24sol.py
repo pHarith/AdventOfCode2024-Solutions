@@ -96,7 +96,18 @@ def find_swappped_wires(gates):
     """
     return
 
+def adder(input1, input2, carry_in_bit):
+    """
+    A function to perform addition between two binary input bits, 
+    including the carry bit from previous digits.
 
+    Return the sum bit and the carry bit from the operation.
+    """
+    sum_bit = (input1 ^ input2) ^ carry_in_bit
+
+    carry_out_bit = (input1 & input2) | (sum_bit & carry_in_bit)
+
+    return sum_bit, carry_out_bit
 
 
 
