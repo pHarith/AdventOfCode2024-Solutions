@@ -90,11 +90,16 @@ def solve(input_file):
 
 # Helper functions
 
-def find_swappped_wires(gates):
+def verify_gate(input1, input2, operation, gates):
     """
-    Given the dictionary <gates>, find and return pairs of swapped wires that cause that incorrect addition.
+    Checks if a certain gate is in the config.
+    Returns the output wire of the gate tuple (input1, input2, operation)
+    or None.
     """
-    return
+    gate = (input1, input2, operation)
+    output_wire = next((w for w, g in gates.items() if g == gate), None)
+    return output_wire
+
 
 def adder(input1, input2, carry_in_bit):
     """
@@ -109,8 +114,11 @@ def adder(input1, input2, carry_in_bit):
 
     return sum_bit, carry_out_bit
 
-
-
+def find_swappped_wires(gates):
+    """
+    Given the dictionary <gates>, find and return pairs of swapped wires that cause that incorrect addition.
+    """
+    return
 
 def solve_part2(input_file):
     """
