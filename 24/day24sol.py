@@ -118,6 +118,8 @@ def find_swappped_wires(gates):
     """
     Given the dictionary <gates>, find and return pairs of swapped wires that cause that incorrect addition.
     """
+    # TODO: use verify_gate() and adder() to check for wires that are swapped. a logically correct operation with adder()
+    # should produce a tuple of (input1, input2, operation) that has a valid output_wire in gates.
     return
 
 def solve_part2(input_file):
