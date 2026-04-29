@@ -105,7 +105,7 @@ def adder(input1, input2, carry_in_bit):
     """
     sum_bit = (input1 ^ input2) ^ carry_in_bit
 
-    carry_out_bit = (input1 & input2) | (sum_bit & carry_in_bit)
+    carry_out_bit = (input1 & input2) | ((input1 ^ input2) & carry_in_bit)
 
     return sum_bit, carry_out_bit
 
