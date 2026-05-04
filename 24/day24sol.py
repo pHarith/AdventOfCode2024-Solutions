@@ -108,11 +108,41 @@ def adder(input1, input2, carry_in_bit):
 
     Return the sum bit and the carry bit from the operation.
     """
-    sum_bit = (input1 ^ input2) ^ carry_in_bit
 
-    carry_out_bit = (input1 & input2) | ((input1 ^ input2) & carry_in_bit)
+    partial_sum = input1 ^ input2
+
+    sum_bit = partial_sum ^ carry_in_bit
+
+    partial_carry_out = input1 & input2
+
+    full_sum_carry_out = partial_sum & carry_in_bit
+
+    carry_out_bit = partial_carry_out | full_sum_carry_out
 
     return sum_bit, carry_out_bit
+
+
+def verify_adder(input1, input2, carry_in, gates):
+    """
+    Verify if bit addition between two inputs exist in the gate config, following
+    the steps outlined in adder.
+
+    Return the final output wire of the 
+    """
+
+    partial_sum = verify_gate(input1, input2, 'XOR', gates)
+
+    sum = verify_gate(partial_sum, carry_in, 'XOR', gates)
+
+    partial_carry_out = verify_gate(input1, input2, 'AND', gates)
+
+    full_sum_carry_out = verify_gate(partial_sum, carry_in, 'AND', gates)
+
+    carry_out = verify_gate(partial_carry_out, full_sum_carry_out, 'OR', gates)
+
+    return carry_out
+
+
 
 def find_swappped_wires(gates):
     """
