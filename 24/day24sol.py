@@ -90,68 +90,6 @@ def solve(input_file):
 
 # Helper functions
 
-def verify_gate(input1, input2, operation, gates):
-    """
-    Checks if a certain gate is in the config.
-    Returns the output wire of the gate tuple (input1, input2, operation)
-    or None.
-    """
-    gate = (input1, input2, operation)
-    output_wire = next((w for w, g in gates.items() if g == gate), None)
-    return output_wire
-
-
-def adder(input1, input2, carry_in_bit):
-    """
-    A function to perform addition between two binary input bits, 
-    including the carry bit from previous digits.
-
-    Return the sum bit and the carry bit from the operation.
-    """
-
-    partial_sum = input1 ^ input2
-
-    sum_bit = partial_sum ^ carry_in_bit
-
-    partial_carry_out = input1 & input2
-
-    full_sum_carry_out = partial_sum & carry_in_bit
-
-    carry_out_bit = partial_carry_out | full_sum_carry_out
-
-    return sum_bit, carry_out_bit
-
-
-def verify_adder(input1, input2, carry_in, gates):
-    """
-    Verify if bit addition between two inputs exist in the gate config, following
-    the steps outlined in adder.
-
-    Return the final output wire of the 
-    """
-
-    partial_sum = verify_gate(input1, input2, 'XOR', gates)
-
-    sum = verify_gate(partial_sum, carry_in, 'XOR', gates)
-
-    partial_carry_out = verify_gate(input1, input2, 'AND', gates)
-
-    full_sum_carry_out = verify_gate(partial_sum, carry_in, 'AND', gates)
-
-    carry_out = verify_gate(partial_carry_out, full_sum_carry_out, 'OR', gates)
-
-    return carry_out
-
-
-
-def find_swappped_wires(gates):
-    """
-    Given the dictionary <gates>, find and return pairs of swapped wires that cause that incorrect addition.
-    """
-    # TODO: use verify_gate() and adder() to check for wires that are swapped. a logically correct operation with adder()
-    # should produce a tuple of (input1, input2, operation) that has a valid output_wire in gates.
-    return
-
 def solve_part2(input_file):
     """
     Produce the solution to part 2 of the day 24 problem - Crossed Wires
