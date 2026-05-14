@@ -91,8 +91,18 @@ def solve(input_file):
 # Helper functions
 def verify_gate(input1, input2, operation, gates):
     """
-    
+    Checks if a certain gate is in the config.
+    Returns the output wire of the gate tuple (input1, input2, operation)
+    or None.
     """
+    # NOTE: any of the two inputs can come first in the gates dictionary so check both options
+    gate_1 = (input1, input2, operation)
+    gate_2 = (input2, input1, operation)
+    
+    output_wire = next((w for w, g in gates.items() if g == gate_1 or g == gate_2), None)
+    return output_wire
+
+
 
 
 
