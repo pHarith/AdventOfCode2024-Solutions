@@ -89,6 +89,12 @@ def solve(input_file):
 #### PART 2 ####
 
 # Helper functions
+def verify_gate(input1, input2, operation, gates):
+    """
+    
+    """
+
+
 
 def solve_part2(input_file):
     """
