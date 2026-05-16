@@ -102,18 +102,53 @@ def verify_gate(input1, input2, operation, gates):
     output_wire = next((w for w, g in gates.items() if g == gate_1 or g == gate_2), None)
     return output_wire
 
+def verify_adder(x, y, z, carry_in, gates):
+    """
+    Verify if a bit addition x and y wires exists in 
+    the gates dictionary. Return the carry out value of the addition if it does.
+    Else, return None and any broken wires found during the verification.
+    """
+    pass
+
+def find_swapped_wires(wires, gates, bit_cap):
+    swapped_wires = []
+    carry_in = None
 
 
+    for bit in range(bit_cap):
+        # Hardcode the x and y wires from the bit count
+        x, y = f'x{bit:02d}', f'y{bit:02d}'
+        z = f'z{bit:02d}'
+
+        if x not in wires or y not in wires:
+            break
+
+        print(f"bit={bit}, carry_in={carry_in}")
+
+        carry_out, broken = verify_adder(x, y, z, carry_in, gates)
+
+        if broken:
+            print(f"bit={bit}, broken={broken}")
+        swapped_wires.extend(broken)
+        carry_in = carry_out
+
+    return swapped_wires
 
 
 def solve_part2(input_file):
     """
     Produce the solution to part 2 of the day 24 problem - Crossed Wires
     """
-    return 
+    # Read the wire values and logic gates
+    wires, gates = read_wire_config(input_file)
+
+    swapped = find_swapped_wires(wires, gates, bit_cap=100)
+    print(swapped)
+    return ",".join(swapped)
 
 if __name__ == "__main__":
     input = 'input.txt'
     # input = 'test.txt'
     # input = 'smalltest.txt'
     print(solve(input))
+    print(solve_part2(input))
