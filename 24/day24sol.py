@@ -88,52 +88,19 @@ def solve(input_file):
 
 #### PART 2 ####
 
-# Helper functions
-def verify_gate(input1, input2, operation, gates):
-    """
-    Checks if a certain gate is in the config.
-    Returns the output wire of the gate tuple (input1, input2, operation)
-    or None.
-    """
-    # NOTE: any of the two inputs can come first in the gates dictionary so check both options
-    gate_1 = (input1, input2, operation)
-    gate_2 = (input2, input1, operation)
+# Helper function
+def find_swapped_wires(gates):
+
+    swapped = []
     
-    output_wire = next((w for w, g in gates.items() if g == gate_1 or g == gate_2), None)
-    return output_wire
+    # TODO: Build a dictionary which uses inputs as key and gate tuples as values
 
-def verify_adder(x, y, z, carry_in, gates):
-    """
-    Verify if a bit addition x and y wires exists in 
-    the gates dictionary. Return the carry out value of the addition if it does.
-    Else, return None and any broken wires found during the verification.
-    """
-    pass
+    for gate in gates:
+        # TODO: Check that any operation resembling one of the 5 operations of bit addition
+        # is working correctly
+        pass
 
-def find_swapped_wires(wires, gates, bit_cap):
-    swapped_wires = []
-    carry_in = None
-
-
-    for bit in range(bit_cap):
-        # Hardcode the x and y wires from the bit count
-        x, y = f'x{bit:02d}', f'y{bit:02d}'
-        z = f'z{bit:02d}'
-
-        if x not in wires or y not in wires:
-            break
-
-        print(f"bit={bit}, carry_in={carry_in}")
-
-        carry_out, broken = verify_adder(x, y, z, carry_in, gates)
-
-        if broken:
-            print(f"bit={bit}, broken={broken}")
-        swapped_wires.extend(broken)
-        carry_in = carry_out
-
-    return swapped_wires
-
+    return swapped
 
 def solve_part2(input_file):
     """
@@ -141,14 +108,15 @@ def solve_part2(input_file):
     """
     # Read the wire values and logic gates
     wires, gates = read_wire_config(input_file)
-
-    swapped = find_swapped_wires(wires, gates, bit_cap=100)
-    print(swapped)
+    # TODO: Build a helper function to return all the eight swapped wires
+    swapped = []
     return ",".join(swapped)
 
+
 if __name__ == "__main__":
-    input = 'input.txt'
+    # input = 'input.txt'
     # input = 'test.txt'
     # input = 'smalltest.txt'
-    print(solve(input))
+    input = 'smalltest2.txt'
+    # print(solve(input))
     print(solve_part2(input))
