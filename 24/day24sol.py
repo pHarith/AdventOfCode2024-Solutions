@@ -1,5 +1,5 @@
 # Solution to day 24: Crossed Wires
-
+from collections import defaultdict
 
 def read_wire_config(input_file):
     """
@@ -94,6 +94,17 @@ def find_swapped_wires(gates):
     swapped = []
     
     # TODO: Build a dictionary which uses inputs as key and gate tuples as values
+    def inputs_to_gate(gates):
+        """
+        Build a dictionary from <gates> where the keys are wires, with a list of corresponding
+        gates as values.
+        """
+        input_gates = defaultdict(list)
+
+        for output, (input1, input2, operation) in gates.items():
+            input_gates[input1].append((input2, output, operation))
+            input_gates[input2].append((input1, output, operation))
+        return input_gates
 
     for gate in gates:
         # TODO: Check that any operation resembling one of the 5 operations of bit addition
