@@ -138,7 +138,7 @@ def find_swapped_wires(gates):
                     or (input2.startswith('x') and input1.startswith('y'))
         
         # Case 1: Partial Sum
-        # partial_sum = 
+        # partial_sum = input1 ^ input2
         # Partial Sum's output should feed into 1 XOR operation (full sum)
         # and 1 AND operation (full carry)
         if operation == 'XOR' and is_xy_pair:
@@ -147,6 +147,9 @@ def find_swapped_wires(gates):
                 swapped.add(output)
         
         # Case 2: Partial Carry
+        # partial_carry_out = input1 & input2
+        # Partial Carry's output feed into an 'OR' operation (true_carry)
+        # If it is the first bit (bit 0), it is the true_carry (fed into XOR and AND)
         if operation == 'AND' and is_xy_pair:
             set_op = {op for (_, _, op) in inputs_to_gate[output]}
             if set_op and set_op != {'OR'}:
@@ -156,7 +159,8 @@ def find_swapped_wires(gates):
                     swapped.add(output)
 
         # Case 3: Full Sum
-        # Output must be a z wire, and since full_sum = partial_sum ^ carry_in,
+        # full_sum = partial_sum ^ carry_in_bit
+        # Output must be a z wire
         # the inputs are non x, y wires (intermediate wires)
         if operation == "XOR" and not is_xy_pair:
             if not output.startswith('z'):
@@ -164,7 +168,7 @@ def find_swapped_wires(gates):
 
         # Case 4: Full Carry
         # full_carry = partial_sum & carry_in
-        # inputs are non x, y wires (intermediate) and feeds into 'OR' (true carry)
+        # inputs are non x, y wires (intermediate) and feeds into 'OR' (true_carry)
         if operation == "AND" and not is_xy_pair:
             set_op = {op for (_, _, op) in inputs_to_gate[output]}
             if set_op and set_op != {'OR'}:
