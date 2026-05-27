@@ -87,14 +87,31 @@ def solve(input_file):
 
 
 #### PART 2 ####
+# NOTE: The adder function is not used for the solution, but is helpful 
+# in breaking down the logic and the flow of the gates operations
+# when performing bit addition
+def adder(input1, input2, carry_in_bit):
+    """
+    A function to perform addition between two binary input bits, 
+    including the carry bit from previous digits.
+
+    Return the sum bit and the carry bit from the operation.
+    """
+    partial_sum = input1 ^ input2
+    full_sum = partial_sum ^ carry_in_bit
+    partial_carry_out = input1 & input2
+    full_carry_out = partial_sum & carry_in_bit
+    true_carry_out = partial_carry_out | full_carry_out
+    return full_sum, true_carry_out
+
 
 # Helper function
 def find_swapped_wires(gates):
 
-    swapped = []
+    swapped = set()
     
-    # TODO: Build a dictionary which uses inputs as key and gate tuples as values
-    def inputs_to_gate(gates):
+    # Helper function to build a dictionary which uses inputs as key and gate tuples as values
+    def build_inputs_to_gate(gates):
         """
         Build a dictionary from <gates> where the keys are wires, with a list of corresponding
         gates as values.
@@ -105,12 +122,60 @@ def find_swapped_wires(gates):
             input_gates[input1].append((input2, output, operation))
             input_gates[input2].append((input1, output, operation))
         return input_gates
+    
+    # Build a dictionary to track which wire is used in which gates
+    inputs_to_gate = build_inputs_to_gate(gates)
 
-    for gate in gates:
-        # TODO: Check that any operation resembling one of the 5 operations of bit addition
-        # is working correctly
-        pass
+    # Note the final z wire that stores a carry out value (not sum)
+    z_wires = [wire for wire in gates if wire.startswith('z')]
+    last_zwire = sorted(z_wires)[-1]
 
+    # Iterate through the gates dictionary
+    for output, (input1, input2, operation) in gates.items():
+
+        # Check if a pair of input is x, y pair
+        is_xy_pair = (input1.startswith('x') and input2.startswith('y')) \
+                    or (input2.startswith('x') and input1.startswith('y'))
+        
+        # Case 1: Partial Sum
+        # partial_sum = 
+        # Partial Sum's output should feed into 1 XOR operation (full sum)
+        # and 1 AND operation (full carry)
+        if operation == 'XOR' and is_xy_pair:
+            set_op = {op for (_, _, op) in inputs_to_gate[output]}
+            if set_op and set_op != {'XOR', 'AND'}:
+                swapped.add(output)
+        
+        # Case 2: Partial Carry
+        if operation == 'AND' and is_xy_pair:
+            set_op = {op for (_, _, op) in inputs_to_gate[output]}
+            if set_op and set_op != {'OR'}:
+                is_bit_0 = input1 == 'x00' and input2 == 'y00' \
+                        or input2 == 'x00' and input1 == 'y00'
+                if not is_bit_0 or set_op != {'XOR', 'AND'}:
+                    swapped.add(output)
+
+        # Case 3: Full Sum
+        # Output must be a z wire, and since full_sum = partial_sum ^ carry_in,
+        # the inputs are non x, y wires (intermediate wires)
+        if operation == "XOR" and not is_xy_pair:
+            if not output.startswith('z'):
+                swapped.add(output)
+
+        # Case 4: Full Carry
+        # full_carry = partial_sum & carry_in
+        # inputs are non x, y wires (intermediate) and feeds into 'OR' (true carry)
+        if operation == "AND" and not is_xy_pair:
+            set_op = {op for (_, _, op) in inputs_to_gate[output]}
+            if set_op and set_op != {'OR'}:
+                swapped.add(output)
+
+        # Backdoor Case: Check z wires that are produced faulty
+        # The last Z wire is produced from an OR operation as it has to store
+        # any carry outs from the previous operation
+        if output.startswith('z') and operation != 'XOR' and output != last_zwire:
+            swapped.add(output)
+        
     return swapped
 
 def solve_part2(input_file):
@@ -119,15 +184,14 @@ def solve_part2(input_file):
     """
     # Read the wire values and logic gates
     wires, gates = read_wire_config(input_file)
-    # TODO: Build a helper function to return all the eight swapped wires
-    swapped = []
-    return ",".join(swapped)
+
+    swapped = find_swapped_wires(gates)
+    return ",".join(sorted(swapped))
 
 
 if __name__ == "__main__":
-    # input = 'input.txt'
+    input = 'input.txt'
     # input = 'test.txt'
     # input = 'smalltest.txt'
-    input = 'smalltest2.txt'
-    # print(solve(input))
+    print(solve(input))
     print(solve_part2(input))
